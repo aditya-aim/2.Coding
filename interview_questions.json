@@ -1,0 +1,14 @@
+{
+    "questions": [
+      {
+        "question": "Write a Python function to find the maximum sum of any contiguous subarray of size k."
+      },
+      {
+        "question": "Implement a function that checks if a string is a palindrome."
+      },
+      {
+        "question": "Write a function to find the longest common subsequence between two strings."
+      }
+    ]
+}
+  
