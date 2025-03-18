@@ -1,3 +1,4 @@
+
 ## 📄 **API Documentation**
 
 **Project:** AI Coding Interviewer
@@ -44,12 +45,11 @@ OPENAI_API_KEY=sk-proj-...
 
 ### 5. **Run the App**
 
-- **app.py :** AI generates a coding problem using a system prompt.
-
-- **app2.py :** Loads coding questions from a JSON file and picks one randomly.
+* **app.py :** AI generates a coding problem using a system prompt.
+* **app2.py :** Loads coding questions from a JSON file and picks one randomly.
 
 ```bash
-python app2.py
+python app.py
 ```
 
 ---
@@ -68,7 +68,14 @@ This project runs on **Python 3.12.7**
 
 **Description:**
 
-Starts the coding interview by selecting a random question from `interview_questions.json` and initiating the session.
+Starts the coding interview by selecting a random question based on the candidate's role and skill. If no question is found, the AI will generate one.
+
+**Headers:**
+
+| Key   | Type   | Description                   | Required |
+| ----- | ------ | ----------------------------- | -------- |
+| Role  | String | The job role of the candidate | ✅       |
+| Skill | String | The key skill being evaluated | ✅       |
 
 **Request:**
 
@@ -80,7 +87,15 @@ Starts the coding interview by selecting a random question from `interview_quest
 
 ```json
 {
-  "message": "Hello! Let's start the coding interview. Your question is: How would you implement a binary search algorithm?"
+  "message": "Hello! Let's start the coding interview for the role of Backend Developer focusing on Python. Your question is: How would you implement a binary search algorithm?"
+}
+```
+
+* **400 Bad Request** (Missing role or skill)
+
+```json
+{
+  "error": "Missing Role or Skill in headers"
 }
 ```
 
@@ -100,7 +115,7 @@ Starts the coding interview by selecting a random question from `interview_quest
 
 **Description:**
 
-Allows the user to ask a question about the coding problem. The AI will clarify the problem without providing a direct solution.
+Allows the candidate to ask for clarification or hints about the coding question. The AI will provide professional guidance without giving direct solutions.
 
 **Request:**
 
@@ -108,7 +123,8 @@ Allows the user to ask a question about the coding problem. The AI will clarify 
 
 ```json
 {
-  "input": "Can I use recursion to solve this?"
+  "input": "Can I use recursion?",
+  "code": "def binary_search(arr, target):\n  left, right = 0, len(arr) - 1\n  while left <= right:\n    mid = (left + right) // 2\n    if arr[mid] == target:\n      return mid\n    elif arr[mid] < target:\n      left = mid + 1\n    else:\n      right = mid - 1\n  return -1"
 }
 ```
 
@@ -118,11 +134,11 @@ Allows the user to ask a question about the coding problem. The AI will clarify 
 
 ```json
 {
-  "response": "Yes, recursion is a valid approach. You can try breaking down the problem into smaller parts."
+  "response": "Yes, recursion is a valid approach. You could try breaking down the problem into smaller parts."
 }
 ```
 
-* **400 Bad Request**
+* **400 Bad Request** (Missing input)
 
 ```json
 {
@@ -130,11 +146,19 @@ Allows the user to ask a question about the coding problem. The AI will clarify 
 }
 ```
 
-* **400 Bad Request** (if interview not started)
+* **400 Bad Request** (No active session)
 
 ```json
 {
   "error": "Interview has not started yet"
+}
+```
+
+* **400 Bad Request** (Missing code)
+
+```json
+{
+  "error": "Please attach your code for evaluation and analysis."
 }
 ```
 
@@ -154,7 +178,7 @@ Allows the user to ask a question about the coding problem. The AI will clarify 
 
 **Description:**
 
-Submits the user's solution. The AI will evaluate the code for correctness, efficiency, and edge cases.
+Submits the candidate's solution for evaluation. The AI will analyze correctness, efficiency, and performance.
 
 **Request:**
 
@@ -162,7 +186,9 @@ Submits the user's solution. The AI will evaluate the code for correctness, effi
 
 ```json
 {
-  "code": "def binary_search(arr, target):\n  left, right = 0, len(arr) - 1\n  while left <= right:\n    mid = (left + right) // 2\n    if arr[mid] == target:\n      return mid\n    elif arr[mid] < target:\n      left = mid + 1\n    else:\n      right = mid - 1\n  return -1"
+  "code": "def binary_search(arr, target):\n  left, right = 0, len(arr) - 1\n  while left <= right:\n    mid = (left + right) // 2\n    if arr[mid] == target:\n      return mid\n    elif arr[mid] < target:\n      left = mid + 1\n    else:\n      right = mid - 1\n  return -1",
+  "expected_duration": 10,
+  "candidates_duration": 8
 }
 ```
 
@@ -176,7 +202,7 @@ Submits the user's solution. The AI will evaluate the code for correctness, effi
 }
 ```
 
-* **400 Bad Request**
+* **400 Bad Request** (Missing code)
 
 ```json
 {
@@ -184,11 +210,27 @@ Submits the user's solution. The AI will evaluate the code for correctness, effi
 }
 ```
 
-* **400 Bad Request** (if interview not started)
+* **400 Bad Request** (No active session)
 
 ```json
 {
   "error": "No question has been asked yet"
+}
+```
+
+* **400 Bad Request** (Missing expected duration)
+
+```json
+{
+  "error": "expected_duration is required"
+}
+```
+
+* **400 Bad Request** (Missing candidate's duration)
+
+```json
+{
+  "error": "candidates_duration is required"
 }
 ```
 
@@ -239,14 +281,15 @@ Ends the interview session and saves the conversation to `coding_session_log.txt
 ### ✅ Start Interview
 
 ```bash
-curl -X POST http://127.0.0.1:5000/start
+curl -X POST http://127.0.0.1:5000/start -H "Role: Backend Developer" -H "Skill: Python"
 ```
 
 ### ✅ Ask for Clarification
 
 ```bash
 curl -X POST http://127.0.0.1:5000/ask -H "Content-Type: application/json" -d '{
-  "input": "Can I use recursion?"
+  "input": "Can I use recursion?",
+  "code": "def binary_search(arr, target):\n  left, right = 0, len(arr) - 1\n  while left <= right:\n    mid = (left + right) // 2\n    if arr[mid] == target:\n      return mid\n    elif arr[mid] < target:\n      left = mid + 1\n    else:\n      right = mid - 1\n  return -1"
 }'
 ```
 
@@ -254,7 +297,9 @@ curl -X POST http://127.0.0.1:5000/ask -H "Content-Type: application/json" -d '{
 
 ```bash
 curl -X POST http://127.0.0.1:5000/submit -H "Content-Type: application/json" -d '{
-  "code": "def binary_search(arr, target):\n  left, right = 0, len(arr) - 1\n  while left <= right:\n    mid = (left + right) // 2\n    if arr[mid] == target:\n      return mid\n    elif arr[mid] < target:\n      left = mid + 1\n    else:\n      right = mid - 1\n  return -1"
+  "code": "def binary_search(arr, target):\n  left, right = 0, len(arr) - 1\n  while left <= right:\n    mid = (left + right) // 2\n    if arr[mid] == target:\n      return mid\n    elif arr[mid] < target:\n      left = mid + 1\n    else:\n      right = mid - 1\n  return -1",
+  "expected_duration": 10,
+  "candidates_duration": 8
 }'
 ```
 
@@ -286,7 +331,7 @@ curl -X POST http://127.0.0.1:5000/end
 
 ---
 
-### ✅ **Status Codes**
+## ✅ **Status Codes**
 
 | Status Code | Description                                |
 | ----------- | ------------------------------------------ |
