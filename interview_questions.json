@@ -1,0 +1,44 @@
+{
+  "questions": [
+    {
+      "role": "Backend Developer",
+      "skills": ["Python", "Django"],
+      "question": "Write a Django view to handle user login using session-based authentication."
+    },
+    {
+      "role": "Backend Developer",
+      "skills": ["Python", "Flask"],
+      "question": "Create a Flask API to handle user registration and return a JWT token."
+    },
+    {
+      "role": "Data Scientist",
+      "skills": ["Python", "Machine Learning"],
+      "question": "Implement a Random Forest model in Python to classify the Iris dataset."
+    },
+    {
+      "role": "Data Scientist",
+      "skills": ["Python", "NLP"],
+      "question": "Create a Python script to preprocess text and train a sentiment analysis model."
+    },
+    {
+      "role": "Frontend Developer",
+      "skills": ["JavaScript", "React"],
+      "question": "Build a React component that renders a list of items and allows sorting."
+    },
+    {
+      "role": "Frontend Developer",
+      "skills": ["JavaScript", "Vue"],
+      "question": "Create a Vue.js component that fetches data from an API and displays it in a table."
+    },
+    {
+      "role": "DevOps Engineer",
+      "skills": ["Docker", "Kubernetes"],
+      "question": "Write a Dockerfile to containerize a Flask app and deploy it using Kubernetes."
+    },
+    {
+      "role": "DevOps Engineer",
+      "skills": ["CI/CD", "GitHub Actions"],
+      "question": "Create a GitHub Actions workflow to build and deploy a Node.js app to AWS."
+    }
+  ]
+}
