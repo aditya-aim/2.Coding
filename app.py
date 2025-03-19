@@ -1,7 +1,8 @@
 import random
 import json
 from flask import Flask, request, jsonify
-from langchain.chat_models import ChatOpenAI
+from flask_cors import CORS
+from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
 import os
@@ -11,6 +12,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Load questions from JSON file
 with open('interview_questions.json', 'r') as file:
@@ -18,8 +20,9 @@ with open('interview_questions.json', 'r') as file:
 
 # Initialize GPT-4o model
 llm = ChatOpenAI(
-    openai_api_key=api_key,
-    model_name="gpt-4o"
+    model="gpt-4",
+    temperature=0.7,
+    openai_api_key=api_key
 )
 
 # Initialize Conversation Memory
@@ -34,8 +37,11 @@ current_question = None
 
 
 # ✅ Route 1: Start the Interview
-@app.route('/start', methods=['POST'])
+@app.route('/start', methods=['POST', 'OPTIONS'])
 def start_interview():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     global current_question
 
     try:
@@ -82,8 +88,11 @@ def start_interview():
         return jsonify({"error": str(e)}), 500
 
 # ✅ Route 2: Ask Clarification (No direct answers)
-@app.route('/ask', methods=['POST'])
-def ask():
+@app.route('/ask', methods=['POST', 'OPTIONS'])
+def ask_question():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     try:
         data = request.json
         user_input = data.get('input')
@@ -114,7 +123,7 @@ def ask():
             - Keep your responses clear and professional without stating that you are giving a hint.  
 
         2. **Performance Analytics:**  
-            - Analyze the code’s **accuracy** and **efficiency**.  
+            - Analyze the code's **accuracy** and **efficiency**.  
             - Provide insights into how the code performs under different input sizes.  
             - Highlight potential bottlenecks or inefficiencies.  
 
@@ -153,8 +162,11 @@ def ask():
         return jsonify({"error": str(e)}), 500
 
 # ✅ Route 3: Submit Code for Evaluation
-@app.route('/submit', methods=['POST'])
-def submit():
+@app.route('/submit', methods=['POST', 'OPTIONS'])
+def submit_code():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     try:
         data = request.json
         code = data.get('code')
@@ -208,7 +220,7 @@ def submit():
         - Point out areas for improvement (e.g., better algorithm choice, cleaner code, improved complexity).  
 
         5. **Final Performance Summary:**  
-        - Provide an overall assessment of the candidate’s performance based on their coding style, efficiency, accuracy, and problem-solving approach.  
+        - Provide an overall assessment of the candidate's performance based on their coding style, efficiency, accuracy, and problem-solving approach.  
         - Offer professional, clear, and actionable feedback to help the candidate improve.  
 
         ### 🚫 **Rules:**  
@@ -225,12 +237,17 @@ def submit():
 
 
 # ✅ Route 4: End the Interview
-@app.route('/end', methods=['POST'])
+@app.route('/end', methods=['POST', 'OPTIONS'])
 def end_interview():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     try:
         with open("coding_session_log.txt", "w", encoding="utf-8") as file:
             file.write(memory.load_memory_variables({})['history'])
 
+        # Clear the conversation memory
+        memory.clear()
         return jsonify({"message": "Session ended. Log saved to 'coding_session_log.txt'"}), 200
 
     except Exception as e:
